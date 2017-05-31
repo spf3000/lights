@@ -1,5 +1,5 @@
 import scala.language.postfixOps
-import squants.energy.{Energy, Milliwatts, Power, Watts, WattHours, Joules}
+import squants.energy.{Energy, Joules, Milliwatts, Power, WattHours, Watts}
 import squants.time.{Seconds, Time}
 
 case class Light(isOn: Boolean, power: Power )
@@ -10,9 +10,12 @@ case class Lights(theLights: List[Light], number: Int, roundTime: Time ) {
 
   def sumOnCycles(startRound: Int, endRound: Int, lightPos: Int): Int = {
     def delta(lp: Int, r: Int) = if (lp % r == 0) 1 else 0
+    def loop(round: Int, acc: Int): Int = {
+      if (round == endRound) acc + delta(lightPos, round)
+      else loop(round+1, acc+delta(lightPos,round))
+    }
     require(endRound >= startRound)
-    if (endRound == startRound) delta(lightPos, endRound)
-    else delta(lightPos, endRound) + sumOnCycles(startRound, endRound - 1, lightPos)
+    loop(startRound, 0)
   }
 
   def totalOnCycles(startRound: Int, endRound: Int): Int = {
@@ -42,11 +45,11 @@ object Lights{
 
 turnOnNth(1,myLights)
 
-myLights.sumOnCycles(1,3,1)
+myLights.sumOnCycles(startRound = 1,endRound =3,lightPos=1)
 
-val onCycles = myLights.totalOnCycles(1,2)
+val onCycles = myLights.totalOnCycles(startRound = 1,endRound = 2)
 
-val energy: Energy =  myLights.totalEnergy(1,1000)
+val energy: Energy =  myLights.totalEnergy(startRound = 1,endRound = 100000000)
 
 val joules = energy in Joules
 
